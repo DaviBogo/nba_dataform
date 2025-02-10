@@ -1,0 +1,7 @@
+config {
+    type: "declaration",
+    database: "nba-pipeline-project",
+    schema: "bronze",
+    name: "stats",
+    description: "Raw data off all players stats from the NBA."
+}
