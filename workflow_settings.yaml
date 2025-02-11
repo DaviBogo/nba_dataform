@@ -1,5 +1,5 @@
 defaultProject: nba-pipeline-project
 defaultLocation: southamerica-east1
-defaultDataset: bronze
+defaultDataset: gold
 defaultAssertionDataset: dataform_assertions
 dataformCoreVersion: 3.0.0
