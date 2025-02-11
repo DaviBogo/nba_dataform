@@ -1,0 +1,12 @@
+config { 
+    type: "table",    
+    schema: "gold",
+    name: "dim_season",
+    description: "Creates dimension of seasons."
+}
+
+SELECT DISTINCT
+    CAST(DENSE_RANK() OVER (ORDER BY season) AS STRING) AS season_id,
+    season
+FROM
+    ${ref("stats_silver")}

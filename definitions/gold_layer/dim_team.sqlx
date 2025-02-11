@@ -1,0 +1,14 @@
+config { 
+    type: "table",    
+    schema: "gold",
+    name: "dim_team",
+    description: "Creates dimension of teams."
+}
+
+SELECT DISTINCT
+    team_id,
+    team_name,
+    team_abbreviation
+FROM
+    ${ref("players_silver")}
+WHERE team_name != ''

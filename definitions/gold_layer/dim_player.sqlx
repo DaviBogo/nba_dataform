@@ -1,0 +1,12 @@
+config { 
+    type: "table",    
+    schema: "gold",
+    name: "dim_player",
+    description: "Creates dimension of players."
+}
+
+SELECT
+    player_id,
+    player_name
+FROM
+    ${ref("players_silver")}
