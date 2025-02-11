@@ -1,0 +1,18 @@
+config { 
+    type: "table",    
+    schema: "silver",
+    name: "players_silver",
+    description: "Transform relevant data from bronze_players."
+}
+
+SELECT
+    TRIM(CAST(PERSON_ID AS STRING)) AS player_id,
+    TRIM(CAST(DISPLAY_FIRST_LAST AS STRING)) AS player_name,
+    TRIM(CAST(TEAM_ID AS STRING)) AS team_id,
+    TRIM(CAST(TEAM_NAME AS STRING)) AS team_name,
+    TRIM(CAST(TEAM_ABBREVIATION AS STRING)) AS team_abbreviation,
+    CAST(exported_at AS DATETIME) AS exported_at
+FROM
+    ${ref("players")}
+WHERE
+    CAST(TO_YEAR AS INTEGER) >= 2015

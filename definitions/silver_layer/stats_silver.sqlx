@@ -1,0 +1,28 @@
+config { 
+    type: "table",    
+    schema: "silver",
+    name: "stats_silver",
+    description: "Transform relevant data from bronze_stats."
+}
+
+SELECT
+    TRIM(CAST(season AS STRING)) AS season,
+    TRIM(CAST(PLAYER_ID AS STRING)) AS player_id,
+    TRIM(CAST(TEAM AS STRING)) AS team_abbreviation,
+    CAST(GP AS INTEGER) AS games_played,
+    CAST(MIN AS INTEGER) AS minutes_played,
+    CAST(FGM AS INTEGER) AS field_goals_made,
+    CAST(FGA AS INTEGER) AS field_goalds_attempted,
+    CAST(FG3M AS INTEGER) AS three_points_made,
+    CAST(AST AS INTEGER) AS assists,
+    CAST(FTM AS INTEGER) AS free_throws_made,
+    CAST(FTA AS INTEGER) AS free_throws_attempted,
+    CAST(TOV AS INTEGER) AS turnovers,
+    CAST(OREB AS INTEGER) AS offensive_rebound,
+    CAST(REB AS INTEGER) AS total_rebounds,
+    CAST(BLK AS INTEGER) AS blocks,
+    CAST(STL AS INTEGER) AS steals,
+    CAST(PF AS INTEGER) AS personal_fouls,
+    CAST(exported_at AS DATETIME) AS exported_at
+FROM
+    ${ref("stats")}
