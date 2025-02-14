@@ -1,0 +1,7 @@
+config {
+    type: "declaration",
+    database: "nba-pipeline-project",
+    schema: "bronze",
+    name: "teams",
+    description: "Raw data for all teams from the NBA."
+}

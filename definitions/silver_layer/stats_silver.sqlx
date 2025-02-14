@@ -11,8 +11,9 @@ SELECT
     TRIM(CAST(TEAM AS STRING)) AS team_abbreviation,
     CAST(GP AS INTEGER) AS games_played,
     CAST(MIN AS INTEGER) AS minutes_played,
+    CAST(PTS AS INTEGER) AS points,
     CAST(FGM AS INTEGER) AS field_goals_made,
-    CAST(FGA AS INTEGER) AS field_goalds_attempted,
+    CAST(FGA AS INTEGER) AS field_goals_attempted,
     CAST(FG3M AS INTEGER) AS three_points_made,
     CAST(AST AS INTEGER) AS assists,
     CAST(FTM AS INTEGER) AS free_throws_made,
@@ -26,3 +27,4 @@ SELECT
     CAST(exported_at AS DATETIME) AS exported_at
 FROM
     ${ref("stats")}
+WHERE MIN > 0

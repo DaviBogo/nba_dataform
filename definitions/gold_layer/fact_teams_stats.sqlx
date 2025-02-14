@@ -1,0 +1,35 @@
+config { 
+    type: "table",    
+    schema: "gold",
+    name: "fact_teams_stats",
+    description: "Creates fact with all teams stats."
+}
+
+
+SELECT DISTINCT
+    t1.season_id,
+    t0.team_id,
+    SUM(t0.games_played) AS games_played,
+    SUM(t0.minutes_played) AS minutes_played,
+    SUM(t0.points) AS points,
+    SUM(t0.field_goals_made) AS field_goals_made,
+    SUM(t0.field_goals_attempted) AS field_goals_attempted,
+    SUM(t0.assists) AS assists,
+    SUM(t0.free_throws_made) AS free_throws_made,
+    SUM(t0.free_throws_attempted) AS free_throws_attempted,
+    SUM(t0.offensive_rebound) AS offensive_rebound,
+    SUM(t0.defensive_rebound) AS defensive_rebound,
+    SUM(t0.total_rebounds) AS total_rebounds,
+    SUM(t0.personal_fouls) AS personal_fouls,
+    SUM(t0.turnovers) AS turnovers,
+    SUM(t0.pace) AS pace,
+    MAX(t2.league_pace) AS league_pace,
+    SUM(t0.possession) AS possession,
+    MAX(t0.exported_at) AS exported_at
+FROM
+    ${ref("teams_silver")} AS t0
+JOIN ${ref("dim_season")} AS t1 ON t0.season = t1.season
+JOIN ${ref("season_stats")} AS t2 ON t0.season = t2.season
+GROUP BY
+    t0.team_id,
+    t1.season_id

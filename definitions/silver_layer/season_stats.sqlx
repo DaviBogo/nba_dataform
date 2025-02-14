@@ -1,0 +1,31 @@
+config { 
+    type: "table",    
+    schema: "silver",
+    name: "season_stats",
+    description: "Calculates value over possesion per season."
+}
+
+WITH league_pace AS (
+    SELECT
+        season,
+        AVG(pace) AS league_pace
+    FROM
+        ${ref("teams_silver")}
+    GROUP BY
+        season
+)
+
+SELECT
+    t0.season,
+    (SUM(t0.field_goals_made)) AS league_field_goals_made,
+    (SUM(t0.personal_fouls)) AS league_personal_fouls,
+    (SUM(t0.free_throws_made)) AS league_free_throws_made,
+    (SUM(t0.free_throws_attempted)) AS league_free_throws_attempted,
+    (SUM(t0.points) / (SUM(t0.field_goals_attempted) - SUM(t0.offensive_rebound) + SUM(t0.turnovers) + 0.44 * SUM(t0.free_throws_attempted))) AS value_over_possession,
+    ((2 / 3) - (0.5 * (SUM(t0.assists) / SUM(t0.field_goals_made))) / (2 * (SUM(t0.field_goals_made) / SUM(t0.free_throws_made)))) AS factor,
+    ((SUM(t0.total_rebounds) - SUM(t0.offensive_rebound)) / SUM(t0.total_rebounds)) AS defensive_rebounds_percentage,
+    MIN(league_pace) AS league_pace
+FROM
+    ${ref("stats_silver")} t0
+JOIN league_pace AS t1 ON t0.season = t1.season
+GROUP BY season

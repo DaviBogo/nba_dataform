@@ -5,30 +5,98 @@ config {
     description: "Creates fact with all stats."
 }
 
-SELECT DISTINCT
-    t1.season_id,
-    t2.team_id,
-    t0.player_id,
-    SUM(t0.games_played) AS games_played,
-    SUM(t0.minutes_played) AS minutes_played,
-    SUM(t0.field_goals_made) AS field_goals_made,
-    SUM(t0.field_goalds_attempted) AS field_goalds_attempted,
-    SUM(t0.three_points_made) AS three_points_made,
-    SUM(t0.assists) AS assists,
-    SUM(t0.free_throws_made) AS free_throws_made,
-    SUM(t0.free_throws_attempted) AS free_throws_attempted,
-    SUM(t0.turnovers) AS turnovers,
-    SUM(t0.offensive_rebound) AS offensive_rebound,
-    SUM(t0.total_rebounds) AS total_rebounds,
-    SUM(t0.blocks) AS blocks,
-    SUM(t0.steals) AS steals,
-    SUM(t0.personal_fouls) AS personal_fouls,
-    MAX(t0.exported_at) AS exported_at
+WITH aPER AS (
+  SELECT 
+      t1.season_id,
+      t2.team_id,
+      t0.player_id,
+      SUM(t0.games_played) AS games_played,
+      SUM(t0.minutes_played) AS minutes_played,
+      SUM(t0.field_goals_made) AS field_goals_made,
+      SUM(t0.field_goals_attempted) AS field_goals_attempted,
+      SUM(t0.three_points_made) AS three_points_made,
+      SUM(t0.assists) AS assists,
+      SUM(t0.free_throws_made) AS free_throws_made,
+      SUM(t0.free_throws_attempted) AS free_throws_attempted,
+      SUM(t0.turnovers) AS turnovers,
+      SUM(t0.offensive_rebound) AS offensive_rebound,
+      SUM(t0.total_rebounds) AS total_rebounds,
+      SUM(t0.blocks) AS blocks,
+      SUM(t0.steals) AS steals,
+      SUM(t0.personal_fouls) AS personal_fouls,
+      MAX(t3.value_over_possession) AS value_over_possession,
+      MAX(t3.factor) AS factor,
+      MAX(t4.assists) AS team_assists,
+      MAX(t4.field_goals_made) AS team_field_goals_made,
+      MAX(t3.defensive_rebounds_percentage) AS defensive_rebounds_percentage,
+      MAX(t3.league_field_goals_made) AS league_field_goals_made,
+      MAX(t3.league_free_throws_attempted) AS league_free_throws_attempted,
+      MAX(t3.league_personal_fouls) AS league_personal_fouls,
+      ((1/SUM(t0.minutes_played))*
+      (SUM(t0.three_points_made)
+      + (2/3) * SUM(t0.assists)
+      + (2 - MAX(t3.factor) * (MAX(t4.assists) / MAX(t4.field_goals_made))) * SUM(t0.field_goals_made)
+      + (SUM(t0.free_throws_made) * 0.5 * (1 + (1 - (MAX(t4.assists) / MAX(t4.field_goals_made))) + (2/3) * (MAX(t4.assists) / MAX(t4.field_goals_made))))
+      - MAX(t3.value_over_possession) * SUM(t0.turnovers)
+      - MAX(t3.value_over_possession) * MAX(t3.defensive_rebounds_percentage) * (SUM(t0.field_goals_attempted) - SUM(t0.field_goals_made))
+      - MAX(t3.value_over_possession) * 0.44 * (0.44 + (0.56 * MAX(t3.defensive_rebounds_percentage))) * (SUM(t0.free_throws_attempted) - SUM(t0.free_throws_made))
+      + MAX(t3.value_over_possession) * (1 - MAX(t3.defensive_rebounds_percentage)) * (SUM(t0.total_rebounds) - SUM(t0.offensive_rebound))
+      + MAX(t3.value_over_possession) * MAX(t3.defensive_rebounds_percentage) * SUM(t0.offensive_rebound)
+      + MAX(t3.value_over_possession) * SUM(t0.steals)
+      + MAX(t3.value_over_possession) * MAX(t3.defensive_rebounds_percentage) * SUM(t0.blocks)
+      - SUM(t0.personal_fouls) * ((MAX(t3.league_free_throws_made) / MAX(t3.league_personal_fouls)) - 0.44 * (MAX(t3.league_free_throws_attempted) / MAX(t3.league_personal_fouls)) * MAX(t3.value_over_possession))
+      ) *
+      (MAX(t3.league_pace) / MAX(t4.pace))) AS aPER
+  FROM
+      ${ref("stats_silver")} AS t0
+  JOIN ${ref("dim_season")} AS t1 ON t0.season = t1.season
+  JOIN ${ref("dim_team")} AS t2 ON t0.team_abbreviation = t2.team_abbreviation
+  JOIN ${ref("season_stats")} AS t3 ON t0.season = t3.season
+  JOIN ${ref("teams_silver")} AS t4 ON t2.team_id = t4.team_id AND t0.season = t4.season
+  WHERE t0.minutes_played > 0
+  GROUP BY
+      t0.player_id,
+      t2.team_id,
+      t1.season_id
+),
+league_aPER AS (
+  SELECT
+      season_id,
+      AVG(t.aPER) AS league_aPER
+  FROM
+      aPER AS t
+  WHERE t.minutes_played > 500
+  GROUP BY
+      season_id
+)
+SELECT
+  t0.season_id,
+  t0.team_id,
+  t0.player_id,
+  t0.games_played,
+  t0.minutes_played,
+  t0.field_goals_made,
+  t0.field_goals_attempted,
+  t0.three_points_made,
+  t0.assists,
+  t0.free_throws_made,
+  t0.free_throws_attempted,
+  t0.turnovers,
+  t0.offensive_rebound,
+  t0.total_rebounds,
+  t0.blocks,
+  t0.steals,
+  t0.personal_fouls,
+  t0.value_over_possession,
+  t0.factor,
+  t0.team_assists,
+  t0.team_field_goals_made,
+  t0.defensive_rebounds_percentage,
+  t0.league_field_goals_made,
+  t0.league_free_throws_attempted,
+  t0.league_personal_fouls,
+  t0.aPER * (15 / t1.league_aPER) AS PER
 FROM
-    ${ref("stats_silver")} AS t0
-JOIN ${ref("dim_season")} AS t1 ON t0.season = t1.season
-JOIN ${ref("dim_team")} AS t2 ON t0.team_abbreviation = t2.team_abbreviation
-GROUP BY
-    t0.player_id,
-    t2.team_id,
-    t1.season_id
+  aPER AS t0
+LEFT JOIN league_aPER AS t1 ON t0.season_id = t1.season_id
+WHERE minutes_played > 500
