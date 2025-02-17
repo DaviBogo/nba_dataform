@@ -14,5 +14,3 @@ SELECT
     CAST(exported_at AS DATETIME) AS exported_at
 FROM
     ${ref("players")}
-WHERE
-    CAST(TO_YEAR AS INTEGER) >= 2015
