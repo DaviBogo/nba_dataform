@@ -5,7 +5,7 @@ config {
     description: "Creates dimension of players."
 }
 
-SELECT
+SELECT DISTINCT
     player_id,
     player_name
 FROM
