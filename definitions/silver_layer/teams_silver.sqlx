@@ -7,7 +7,8 @@ config {
 
 
 SELECT
-    TRIM(CAST(TEAM_ID AS STRING)) AS team_id,
+    TRIM(CAST(CONCAT(TEAM_ID, season) AS STRING)) AS team_id,
+    TRIM(CAST(TEAM_NAME AS STRING)) AS team_name,
     TRIM(CAST(season AS STRING)) AS season,
     CAST(GP AS INTEGER) AS games_played,
     CAST(MIN AS INTEGER) AS minutes_played,

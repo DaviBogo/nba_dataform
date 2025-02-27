@@ -62,10 +62,9 @@ WITH aPER AS (
 league_aPER AS (
   SELECT
       season_id,
-      AVG(t.aPER) AS league_aPER
+      SUM(t.aPER * t.minutes_played) / SUM(t.minutes_played) AS league_aPER
   FROM
       aPER AS t
-  WHERE t.minutes_played > 500
   GROUP BY
       season_id
 )
@@ -99,4 +98,3 @@ SELECT
 FROM
   aPER AS t0
 LEFT JOIN league_aPER AS t1 ON t0.season_id = t1.season_id
-WHERE minutes_played > 500
